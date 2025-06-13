@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,33 +22,32 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _login() async {
+  Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
+    try {
+      final auth = FirebaseAuth.instance;
+      final userCredential = await auth.signInWithEmailAndPassword(
+        email: _email.text.trim(),
+        password: _password.text.trim(),
+      );
 
-    await Future.delayed(const Duration(seconds: 1));
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .get();
 
-    // Mock login check
-    final email = _email.text.trim();
-    final password = _password.text.trim();
+      if (!doc.exists) {
+        throw Exception('Utilizador não encontrado na base de dados.');
+      }
 
-    String? role;
-
-    if (email == 'produtor@mail.com' && password == '123456') {
-      role = 'produtor';
-    } else if (email == 'utilizador@mail.com' && password == '123456') {
-      role = 'utilizador';
-    } else if (email == 'admin@mail.com' && password == '123456') {
-      role = 'admin';
-    }
-
-    setState(() => _isLoading = false);
-
-    if (role == null) {
-      _showError('Credenciais inválidas.');
-    } else {
+      final role = doc.data()!['role'];
       Navigator.pushReplacementNamed(context, '/$role-home');
+    } catch (e) {
+      _showError('Erro: ${e.toString()}');
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -61,14 +63,16 @@ class _LoginScreenState extends State<LoginScreen> {
             TextFormField(
               controller: _email,
               decoration: const InputDecoration(labelText: 'Email'),
-              validator: (val) => val == null || val.isEmpty ? 'Obrigatório' : null,
+              validator: (val) =>
+                  val == null || val.isEmpty ? 'Obrigatório' : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _password,
               decoration: const InputDecoration(labelText: 'Senha'),
               obscureText: true,
-              validator: (val) => val == null || val.isEmpty ? 'Obrigatório' : null,
+              validator: (val) =>
+                  val == null || val.isEmpty ? 'Obrigatório' : null,
             ),
             const SizedBox(height: 24),
             ElevatedButton(
@@ -78,7 +82,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   : const Text('Entrar'),
             ),
             TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/register'),
+              onPressed: () =>
+                  Navigator.pushReplacementNamed(context, '/register'),
               child: const Text('Criar conta'),
             ),
           ]),
