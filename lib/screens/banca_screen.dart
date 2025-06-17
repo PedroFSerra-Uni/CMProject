@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'editar_banca_screen.dart';
 
 class BancaScreen extends StatelessWidget {
   final String nomeBanca;
@@ -46,9 +47,21 @@ class BancaScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
-            onPressed: () {
-              // ação de editar banca
-            },
+           onPressed: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => EditarBancaScreen(
+        nomeBanca: nomeBanca,
+        descricao: descricao,
+        localizacao: localizacao,
+        coordenadas: coordenadas,
+        mercados: mercados,
+        criticas: criticas,
+      ),
+    ),
+  );
+},
           ),
         ],
       ),
@@ -57,12 +70,14 @@ class BancaScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.asset(
-              'assets/imagens/quinta.png',
-              height: 200,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            ),
+            SizedBox(
+  height: 200,
+  child: _ImagemCarousel(imagens: [
+    'assets/imagens/quinta.jpeg',
+    'assets/imagens/quinta2.jpeg',
+    'assets/imagens/quinta3.jpeg',
+  ]),
+),
             const SizedBox(height: 16),
             Text('Descrição', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
@@ -107,6 +122,79 @@ class BancaScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ImagemCarousel extends StatefulWidget {
+  final List<String> imagens;
+
+  const _ImagemCarousel({required this.imagens});
+
+  @override
+  State<_ImagemCarousel> createState() => _ImagemCarouselState();
+}
+
+class _ImagemCarouselState extends State<_ImagemCarousel> {
+  final PageController _controller = PageController();
+  int _paginaAtual = 0;
+
+  void _avancar() {
+    if (_paginaAtual < widget.imagens.length - 1) {
+      _controller.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+    }
+  }
+
+  void _voltar() {
+    if (_paginaAtual > 0) {
+      _controller.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        PageView.builder(
+          controller: _controller,
+          itemCount: widget.imagens.length,
+          onPageChanged: (index) => setState(() => _paginaAtual = index),
+          itemBuilder: (_, index) {
+            return Image.asset(
+              widget.imagens[index],
+              fit: BoxFit.cover,
+              width: double.infinity,
+              errorBuilder: (context, error, stackTrace) => Container(
+                color: Colors.grey,
+                child: const Center(child: Text('Imagem não encontrada')),
+              ),
+            );
+          },
+        ),
+        Positioned(
+          left: 8,
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back_ios),
+            color: Colors.white,
+            onPressed: _voltar,
+          ),
+        ),
+        Positioned(
+          right: 8,
+          child: IconButton(
+            icon: const Icon(Icons.arrow_forward_ios),
+            color: Colors.white,
+            onPressed: _avancar,
+          ),
+        ),
+      ],
     );
   }
 }
