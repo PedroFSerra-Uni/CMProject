@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:project/screens/banca_screen.dart';
 import 'firebase_options.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
@@ -62,6 +63,7 @@ class MyApp extends StatelessWidget {
         '/profile-edit-screen': (context) => const ProfileEditScreen(),
         '/settings-screen': (context) => const SettingsScreen(),
         '/criar-banca': (context) => const CriarBancaScreen(),
+        '/banca-home': (context) => const  BancaHomeScreen(),
       },
     );
   }
