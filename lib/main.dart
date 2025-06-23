@@ -13,6 +13,7 @@ import 'screens/assistente_voz_screen.dart';
 import 'screens/profile_view_screen.dart';
 import 'screens/profile_edit_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/criar_banca_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,6 +61,7 @@ class MyApp extends StatelessWidget {
         '/profile-view-screen': (context) => const ProfileViewScreen(),
         '/profile-edit-screen': (context) => const ProfileEditScreen(),
         '/settings-screen': (context) => const SettingsScreen(),
+        '/criar-banca': (context) => const CriarBancaScreen(),
       },
     );
   }

@@ -36,7 +36,6 @@ class _CriarBancaScreenState extends State<CriarBancaScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: _buildBottomNavigationBar(),
       body: SafeArea(
         child: PageView(
           scrollDirection: Axis.vertical,
@@ -128,7 +127,7 @@ class _CriarBancaScreenState extends State<CriarBancaScreen> {
       ),
       child: Row(
         children: [
-          Image.asset('assets/imagens/helloCornerLogo.png', height: 24),
+          Image.asset('assets/imagens/quinta.jpeg', height: 24),
           const SizedBox(width: 8),
           Text(
             title,
@@ -212,19 +211,4 @@ class _CriarBancaScreenState extends State<CriarBancaScreen> {
     );
   }
 
-  Widget _buildBottomNavigationBar() {
-    return BottomAppBar(
-      shape: const CircularNotchedRectangle(),
-      color: Colors.green[700],
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: const [
-          Icon(Icons.home, color: Colors.white),
-          Icon(Icons.search, color: Colors.white),
-          Icon(Icons.shopping_bag_outlined, color: Colors.white),
-          Icon(Icons.person, color: Colors.white),
-        ],
-      ),
-    );
-  }
 }

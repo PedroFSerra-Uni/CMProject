@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class CreateAdScreen extends StatefulWidget {
   const CreateAdScreen({Key? key}) : super(key: key);
@@ -12,6 +14,9 @@ class CreateAdScreen extends StatefulWidget {
 }
 
 class _CreateAdScreenState extends State<CreateAdScreen> {
+
+  
+
   final _productNameController = TextEditingController();
   String? _selectedCategory;
   final List<String> _categories = ['Vegetal', 'Fruta', 'Legume', 'Outros'];
@@ -97,65 +102,73 @@ class _CreateAdScreenState extends State<CreateAdScreen> {
     );
   }
 
-  Future<void> _publishAd() async {
-    final productName = _productNameController.text.trim();
-    final category = _selectedCategory;
-    final images = _imageBase64List;
-    final deliveryOptions = {
-      'entrega_domicilio': _deliveryHome,
-      'consumidor_recolhe': _consumerPickup,
-      'entrega_transportadora': _courierDelivery,
-    };
-    final minQuantity = _minQuantityController.text.trim();
-    final unit = _selectedUnit;
-    final price = _priceController.text.trim();
-    final description = _descriptionController.text.trim();
+ Future<void> _publishAd() async {
+  final productName = _productNameController.text.trim();
+  final category = _selectedCategory;
+  final images = _imageBase64List;
+  final deliveryOptions = {
+    'entrega_domicilio': _deliveryHome,
+    'consumidor_recolhe': _consumerPickup,
+    'entrega_transportadora': _courierDelivery,
+  };
+  final minQuantity = _minQuantityController.text.trim();
+  final unit = _selectedUnit;
+  final price = _priceController.text.trim();
+  final description = _descriptionController.text.trim();
 
-    // Validações básicas
-    if (productName.isEmpty ||
-        category == null ||
-        images.isEmpty ||
-        (!deliveryOptions.containsValue(true)) ||
-        minQuantity.isEmpty ||
-        unit == null ||
-        price.isEmpty ||
-        description.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Por favor, preencha todos os campos obrigatórios e selecione pelo menos uma opção de entrega.')),
-      );
-      return;
-    }
-
-    final adRef = _database.child('ads').push();
-
-    final adData = {
-      'productName': productName,
-      'category': category,
-      'imagesBase64': images,
-      'deliveryOptions': deliveryOptions,
-      'minQuantity': minQuantity,
-      'unit': unit,
-      'price': price,
-      'description': description,
-      'date': DateTime.now().toIso8601String(),
-    };
-
-    try {
-      await adRef.set(adData);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Anúncio publicado com sucesso!')),
-      );
-      _cancel();
-      Navigator.pop(context, true);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao publicar anúncio: $e')),
-
-
-      );
-    }
-
+  // Basic validation
+  if (productName.isEmpty ||
+      category == null ||
+      images.isEmpty ||
+      (!deliveryOptions.containsValue(true)) ||
+      minQuantity.isEmpty ||
+      unit == null ||
+      price.isEmpty ||
+      description.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Por favor, preencha todos os campos obrigatórios e selecione pelo menos uma opção de entrega.')),
+    );
+    return;
   }
+
+  // Get current user from FirebaseAuth
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('É necessário estar autenticado para publicar um anúncio.')),
+    );
+    return;
+  }
+
+  final adRef = _database.child('ads').push();
+
+  final adData = {
+    'productName': productName,
+    'category': category,
+    'imagesBase64': images,
+    'deliveryOptions': deliveryOptions,
+    'minQuantity': minQuantity,
+    'unit': unit,
+    'price': price,
+    'description': description,
+    'date': DateTime.now().toIso8601String(),
+    'userId': user.uid,  // Add the logged-in user's UID here
+  };
+
+  try {
+    await adRef.set(adData);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Anúncio publicado com sucesso!')),
+    );
+    _cancel();
+    Navigator.pop(context, true);
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Erro ao publicar anúncio: $e')),
+    );
+  }
+}
+
 
   @override
   void dispose() {
@@ -266,18 +279,26 @@ class _CreateAdScreenState extends State<CreateAdScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                ElevatedButton(
-                  onPressed: _cancel,
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
-                  child: const Text('Cancelar'),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _cancel,
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                    child: const Text('Cancelar'),
+                  ),
                 ),
-                ElevatedButton(
-                  onPressed: _preview,
-                  child: const Text('Pré-visualizar'),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _preview,
+                    child: const Text('Pré-visualizar'),
+                  ),
                 ),
-                ElevatedButton(
-                  onPressed: _publishAd,
-                  child: const Text('Publicar Anúncio'),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _publishAd,
+                    child: const Text('Publicar Anúncio'),
+                  ),
                 ),
               ],
             ),

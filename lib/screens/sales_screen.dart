@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'ad_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SalesScreen extends StatefulWidget {
   const SalesScreen({super.key});
@@ -120,38 +121,40 @@ class PublishedAds extends StatefulWidget {
 
 class _PublishedAdsState extends State<PublishedAds> {
   final _database = FirebaseDatabase.instance.ref();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   List<Map<dynamic, dynamic>> _ads = [];
   bool _isLoading = true;
-
-  Future<void> _navigateToCreateAd() async {
-  final result = await Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => const CreateAdScreen()),
-  );
-
-  if (result == true) {
-    await _loadAds(); // Atualiza lista de anúncios
-    widget.onAdCreated?.call(); // Muda o separador para "Anúncios"
-  }
-}
+  User? _currentUser;
 
   @override
   void initState() {
     super.initState();
+    _currentUser = _auth.currentUser;
     _loadAds();
   }
 
   Future<void> _loadAds() async {
+    if (_currentUser == null) {
+      setState(() {
+        _ads = [];
+        _isLoading = false;
+      });
+      return;
+    }
+
     try {
       final snapshot = await _database.child('ads').once();
       final data = snapshot.snapshot.value;
 
       if (data != null && data is Map<dynamic, dynamic>) {
-        final adsList = data.entries.map<Map<dynamic, dynamic>>((entry) {
+        final adsList = data.entries
+            .map<Map<dynamic, dynamic>>((entry) {
           final value = Map<dynamic, dynamic>.from(entry.value as Map);
           value['id'] = entry.key;
           return value;
-        }).toList();
+        })
+            .where((ad) => ad['userId'] == _currentUser!.uid)  // FILTRO POR UID DO UTILIZADOR
+            .toList();
 
         setState(() {
           _ads = adsList;
@@ -171,7 +174,17 @@ class _PublishedAdsState extends State<PublishedAds> {
     }
   }
 
+  Future<void> _navigateToCreateAd() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const CreateAdScreen()),
+    );
 
+    if (result == true) {
+      await _loadAds(); // Atualiza lista de anúncios
+      widget.onAdCreated?.call(); // Muda o separador para "Anúncios"
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -236,3 +249,4 @@ class _PublishedAdsState extends State<PublishedAds> {
     );
   }
 }
+

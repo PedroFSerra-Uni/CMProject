@@ -4,6 +4,8 @@ import '../widgets/base_screen.dart';
 import 'produtor_home_content.dart';
 import 'sales_screen.dart';
 import 'message_home_screen.dart';
+import 'criar_banca_screen.dart';
+
 
 class ProdutorHome extends StatefulWidget {
   const ProdutorHome({super.key});
@@ -20,7 +22,7 @@ class _ProdutorHomeState extends State<ProdutorHome> {
     const SearchScreen(),
     MessageHomeScreen(),
     const SalesScreen(),
-    const Center(child: Text('Minha Loja')),
+    const  CriarBancaScreen(),
   ];
 
   void _onTabTapped(int index) {
