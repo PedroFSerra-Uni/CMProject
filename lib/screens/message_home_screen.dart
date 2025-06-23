@@ -1,8 +1,9 @@
 // messagehome_screen.dart
 import 'package:flutter/material.dart';
-import 'messageopen_screen.dart';
+import 'message_open_screen.dart';
 
 class MessageHomeScreen extends StatelessWidget {
+  
   final List<Map<String, String>> messages = [
     {"name": "Joana Silva", "lastMessage": "Até já!", "time": "12:45"},
     {"name": "Carlos Rocha", "lastMessage": "Enviei os ficheiros", "time": "11:20"},

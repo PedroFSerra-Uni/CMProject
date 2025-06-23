@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "750817095550",
+    "project_id": "hf-bd23",
+    "storage_bucket": "hf-bd23.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:750817095550:android:ebfa90a80acd28c96e0d2f",
+        "android_client_info": {
+          "package_name": "com.example.project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbkeY42GO66yubqt-3R5tqQzwmI1AaZNM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

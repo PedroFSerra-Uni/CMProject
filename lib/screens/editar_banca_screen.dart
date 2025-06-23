@@ -31,14 +31,12 @@ class _EditarBancaScreenState extends State<EditarBancaScreen> {
   late String localizacaoSelecionada;
   List<String> mercadosHabitais = [];
 
-  // Exemplo de locais disponíveis (pode alterar conforme sua necessidade)
   final List<String> locaisDisponiveis = [
     'Rua das Flores, 123',
     'Avenida Central, 45',
     'Praça da Liberdade, 10'
   ];
 
-  // Lista de URLs ou caminhos para as imagens (exemplo inicial)
   List<String> imagens = [
     'https://picsum.photos/id/237/300/150',
     'https://picsum.photos/id/238/300/150',
@@ -47,15 +45,10 @@ class _EditarBancaScreenState extends State<EditarBancaScreen> {
   @override
   void initState() {
     super.initState();
-
     nomeController = TextEditingController(text: widget.nomeBanca);
-
-    // Agora o controller da morada recebe o endereço (localizacao)
     moradaController = TextEditingController(text: widget.localizacao);
-
     descricaoController = TextEditingController(text: widget.descricao);
     novoMercadoController = TextEditingController();
-
     localizacaoSelecionada = widget.localizacao;
     mercadosHabitais = List.from(widget.mercados);
   }
@@ -70,9 +63,10 @@ class _EditarBancaScreenState extends State<EditarBancaScreen> {
   }
 
   void adicionarMercado(String nome) {
-    if (nome.trim().isNotEmpty) {
+    final mercado = nome.trim();
+    if (mercado.isNotEmpty && !mercadosHabitais.contains(mercado)) {
       setState(() {
-        mercadosHabitais.add(nome.trim());
+        mercadosHabitais.add(mercado);
         novoMercadoController.clear();
       });
     }
@@ -87,18 +81,40 @@ class _EditarBancaScreenState extends State<EditarBancaScreen> {
   }
 
   void selecionarNovaImagem() {
-    // TODO: implementar a lógica para selecionar uma nova imagem
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Funcionalidade de adicionar imagem ainda não implementada.')),
     );
   }
 
-  InputDecoration _inputDecoration() {
+  InputDecoration _inputDecoration({String? hintText}) {
     return InputDecoration(
+      hintText: hintText,
       filled: true,
       fillColor: Colors.grey[300],
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
     );
+  }
+
+  void _editarBanca() {
+    final nome = nomeController.text.trim();
+    final morada = moradaController.text.trim();
+    final descricao = descricaoController.text.trim();
+
+    if (nome.isEmpty || morada.isEmpty || descricao.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Preencha todos os campos obrigatórios.')),
+      );
+      return;
+    }
+
+    Navigator.pop(context, {
+      'nomeBanca': nome,
+      'descricao': descricao,
+      'localizacao': morada,
+      'coordenadas': widget.coordenadas,
+      'mercados': mercadosHabitais,
+      'criticas': widget.criticas,
+    });
   }
 
   @override
@@ -117,7 +133,7 @@ class _EditarBancaScreenState extends State<EditarBancaScreen> {
             const SizedBox(height: 6),
             TextField(
               controller: nomeController,
-              decoration: _inputDecoration(),
+              decoration: _inputDecoration(hintText: 'Digite o nome da banca'),
             ),
             const SizedBox(height: 20),
 
@@ -132,12 +148,12 @@ class _EditarBancaScreenState extends State<EditarBancaScreen> {
                 if (newValue != null) {
                   setState(() {
                     localizacaoSelecionada = newValue;
-                    moradaController.text = newValue; // Sincroniza morada ao selecionar localização
+                    moradaController.text = newValue;
                   });
                 }
               },
               items: locaisDisponiveis
-                  .map((value) => DropdownMenuItem<String>(value: value, child: Text(value)))
+                  .map((value) => DropdownMenuItem(value: value, child: Text(value)))
                   .toList(),
             ),
 
@@ -145,11 +161,11 @@ class _EditarBancaScreenState extends State<EditarBancaScreen> {
             const Text('Morada:'),
             TextField(
               controller: moradaController,
-              decoration: _inputDecoration(),
+              decoration: _inputDecoration(hintText: 'Digite a morada'),
               onChanged: (value) {
                 if (localizacaoSelecionada != value) {
                   setState(() {
-                    localizacaoSelecionada = value; // Tenta manter sincronizado
+                    localizacaoSelecionada = value;
                   });
                 }
               },
@@ -178,7 +194,7 @@ class _EditarBancaScreenState extends State<EditarBancaScreen> {
                 Expanded(
                   child: TextField(
                     controller: novoMercadoController,
-                    decoration: const InputDecoration(hintText: 'Novo mercado'),
+                    decoration: _inputDecoration(hintText: 'Novo mercado'),
                   ),
                 ),
                 IconButton(
@@ -246,6 +262,7 @@ class _EditarBancaScreenState extends State<EditarBancaScreen> {
                 filled: true,
                 fillColor: Colors.green[600],
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                hintText: 'Digite a descrição',
                 hintStyle: const TextStyle(color: Colors.white),
               ),
               style: const TextStyle(color: Colors.white),
@@ -256,17 +273,12 @@ class _EditarBancaScreenState extends State<EditarBancaScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
+                  onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[700]),
                   child: const Text('Cancelar'),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    // TODO: lógica de submissão dos dados editados
-                    Navigator.pop(context);
-                  },
+                  onPressed: _editarBanca,
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.green[700]),
                   child: const Text('Editar Banca'),
                 ),
