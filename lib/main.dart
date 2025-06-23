@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/search_screen.dart';
@@ -56,7 +55,7 @@ class MyApp extends StatelessWidget {
         '/ad-detail': (context) =>
             const AdDetailScreen(title: '', subtitle: ''),
         '/historico': (context) => const HistoricoScreen(),
-        '/faq': (context) => const FaqScreen(),
+        '/faq': (context) => const FAQScreen(),
         '/voice-assist': (context) => const VoiceAssistScreen(),
         '/profile-view-screen': (context) => const ProfileViewScreen(),
         '/profile-edit-screen': (context) => const ProfileEditScreen(),
