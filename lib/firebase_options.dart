@@ -46,6 +46,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '750817095550',
     projectId: 'hf-bd23',
     authDomain: 'hf-bd23.firebaseapp.com',
+    databaseURL: 'https://hf-bd23-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'hf-bd23.firebasestorage.app',
     measurementId: 'G-398CE10PHB',
   );
@@ -55,6 +56,7 @@ class DefaultFirebaseOptions {
     appId: '1:750817095550:android:ebfa90a80acd28c96e0d2f',
     messagingSenderId: '750817095550',
     projectId: 'hf-bd23',
+    databaseURL: 'https://hf-bd23-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'hf-bd23.firebasestorage.app',
   );
 
@@ -63,15 +65,19 @@ class DefaultFirebaseOptions {
     appId: '1:750817095550:ios:13eb66b3af52a6456e0d2f',
     messagingSenderId: '750817095550',
     projectId: 'hf-bd23',
+    databaseURL: 'https://hf-bd23-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'hf-bd23.firebasestorage.app',
     iosBundleId: 'com.example.project',
   );
+
+  
 
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyD87yn-IelO23rFiUJUi4Lrb7PPsAl5UPA',
     appId: '1:750817095550:ios:13eb66b3af52a6456e0d2f',
     messagingSenderId: '750817095550',
     projectId: 'hf-bd23',
+    databaseURL: 'https://hf-bd23-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'hf-bd23.firebasestorage.app',
     iosBundleId: 'com.example.project',
   );
@@ -82,7 +88,9 @@ class DefaultFirebaseOptions {
     messagingSenderId: '750817095550',
     projectId: 'hf-bd23',
     authDomain: 'hf-bd23.firebaseapp.com',
+    databaseURL: 'https://hf-bd23-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'hf-bd23.firebasestorage.app',
     measurementId: 'G-09530SH2EL',
   );
+
 }

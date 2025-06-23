@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'dart:typed_data';
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'ad_screen.dart';
 
 class SalesScreen extends StatefulWidget {
   const SalesScreen({super.key});
@@ -14,79 +16,92 @@ class _SalesScreenState extends State<SalesScreen> {
 
   final List<String> tabs = ['Vendas', 'Anúncios'];
 
+  // Chamada para atualizar anúncios e ir para o separador "Anúncios"
+  void _goToAdsTabAndRefresh() {
+    setState(() {
+      _currentTabIndex = 1; // "Anúncios"
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ToggleButtons(
-          isSelected: List.generate(tabs.length, (index) => index == _currentTabIndex),
-          onPressed: (index) {
-            setState(() {
-              _currentTabIndex = index;
-            });
-          },
-          children: tabs
-              .map((tab) => Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text(tab),
-                  ))
-              .toList(),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ToggleButtons(
+            isSelected: List.generate(tabs.length, (index) => index == _currentTabIndex),
+            onPressed: (index) {
+              setState(() {
+                _currentTabIndex = index;
+              });
+            },
+            children: tabs
+                .map((tab) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Text(tab),
+                    ))
+                .toList(),
+          ),
         ),
         Expanded(
-          child: _currentTabIndex == 0 ? ScheduledDeliveries() : PublishedAds(),
+          child: _currentTabIndex == 0
+              ? const ScheduledDeliveries()
+              : PublishedAds(
+                  onAdCreated: _goToAdsTabAndRefresh,
+                ),
         )
       ],
     );
   }
 }
 
+
 class ScheduledDeliveries extends StatelessWidget {
-  final List<Map<String, String>> deliveries = [
-    {
-      'type': 'Entrega ao domicílio',
-      'location': 'Quinta do Conde, Setúbal',
-      'phone': '+351 932340239',
-      'deliveryDate': '04/05/2025 às 15:00',
-    },
-    {
-      'type': 'Recolha transportadora',
-      'pickupDate': '04/05/2025 às 15:00',
-      'deliveryDate': '06/05/2025 às 16:30',
-    },
-  ];
+  const ScheduledDeliveries({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: deliveries.length,
-      itemBuilder: (context, index) {
-        final delivery = deliveries[index];
-        return Card(
-          margin: const EdgeInsets.all(12),
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(delivery['type'] ?? '',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                if (delivery.containsKey('location')) Text('Local: ${delivery['location']}'),
-                if (delivery.containsKey('phone')) Text('Telefone: ${delivery['phone']}'),
-                if (delivery.containsKey('pickupDate')) Text('Recolha: ${delivery['pickupDate']}'),
-                if (delivery.containsKey('deliveryDate')) Text('Entrega: ${delivery['deliveryDate']}'),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Show details logic
-                    },
-                    child: const Text('Detalhes'),
-                  ),
-                )
-              ],
-            ),
-          ),
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('deliveries').snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) return const Center(child: Text('Erro ao carregar dados.'));
+        if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
+
+        final docs = snapshot.data!.docs;
+
+        if (docs.isEmpty) return const Center(child: Text('Nenhuma entrega agendada.'));
+
+        return ListView.builder(
+          itemCount: docs.length,
+          itemBuilder: (context, index) {
+            final delivery = docs[index].data() as Map<String, dynamic>;
+            return Card(
+              margin: const EdgeInsets.all(12),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(delivery['type'] ?? '',
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    if (delivery['location'] != null) Text('Local: ${delivery['location']}'),
+                    if (delivery['phone'] != null) Text('Telefone: ${delivery['phone']}'),
+                    if (delivery['pickupDate'] != null) Text('Recolha: ${delivery['pickupDate']}'),
+                    if (delivery['deliveryDate'] != null) Text('Entrega: ${delivery['deliveryDate']}'),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: ElevatedButton(
+                        onPressed: () {},
+                        child: const Text('Detalhes'),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            );
+          },
         );
       },
     );
@@ -94,174 +109,130 @@ class ScheduledDeliveries extends StatelessWidget {
 }
 
 class PublishedAds extends StatefulWidget {
+  final VoidCallback? onAdCreated;
+
+  const PublishedAds({super.key, this.onAdCreated});
+
+
   @override
   State<PublishedAds> createState() => _PublishedAdsState();
 }
 
 class _PublishedAdsState extends State<PublishedAds> {
-  List<Map<String, dynamic>> ads = [
-    {
-      'imageBase64': 'iVBORw0KGgoAAAANSUhEUgAAA...', // shortened for example
-      'title': 'Batatas-Doces',
-      'date': '19/04/2025',
-      'quantity': '25/500kg',
-    },
-    {
-      'imageBase64': 'iVBORw0KGgoAAAANSUhEUgAAA...',
-      'title': 'Morangos',
-      'date': '20/04/2025',
-      'quantity': '7/200kg',
-    },
-  ];
+  final _database = FirebaseDatabase.instance.ref();
+  List<Map<dynamic, dynamic>> _ads = [];
+  bool _isLoading = true;
 
-  Uint8List decodeBase64Image(String? base64String) {
-    if (base64String == null || base64String.isEmpty) return Uint8List(0);
-    if (base64String.contains(',')) base64String = base64String.split(',')[1];
+  Future<void> _navigateToCreateAd() async {
+  final result = await Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => const CreateAdScreen()),
+  );
+
+  if (result == true) {
+    await _loadAds(); // Atualiza lista de anúncios
+    widget.onAdCreated?.call(); // Muda o separador para "Anúncios"
+  }
+}
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAds();
+  }
+
+  Future<void> _loadAds() async {
     try {
-      return base64Decode(base64String.trim());
-    } catch (_) {
-      return Uint8List(0);
+      final snapshot = await _database.child('ads').once();
+      final data = snapshot.snapshot.value;
+
+      if (data != null && data is Map<dynamic, dynamic>) {
+        final adsList = data.entries.map<Map<dynamic, dynamic>>((entry) {
+          final value = Map<dynamic, dynamic>.from(entry.value as Map);
+          value['id'] = entry.key;
+          return value;
+        }).toList();
+
+        setState(() {
+          _ads = adsList;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _ads = [];
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Erro ao carregar anúncios: $e');
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
-  void _editAd(BuildContext context, int index) {
-    final ad = ads[index];
-    final quantityString = ad['quantity'] ?? '';
-    final match = RegExp(r'^(\d+)\s*/\s*(\d+)\s*(\w+)$').firstMatch(quantityString);
 
-    String current = '0';
-    String max = '0';
-    String unit = '';
-
-    if (match != null) {
-      current = match.group(1)!;
-      max = match.group(2)!;
-      unit = match.group(3)!;
-    }
-
-    final controller = TextEditingController(text: current);
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Editar Quantidade'),
-          content: TextField(
-            controller: controller,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: 'Nova quantidade'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final newAmount = controller.text.trim();
-                if (newAmount.isNotEmpty) {
-                  setState(() {
-                    // Update both current and max, and preserve the unit
-                    ad['quantity'] = '$newAmount/$newAmount$unit';
-                  });
-                }
-                Navigator.pop(context);
-              },
-              child: const Text('Salvar'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-
-
-  void _deleteAd(int index) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Desativar Anúncio'),
-        content: const Text('Tem certeza de que deseja desativar este anúncio?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                ads.removeAt(index);
-              });
-              Navigator.pop(context);
-            },
-            child: const Text('Desativar'),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Column(
       children: [
         Expanded(
-          child: ListView.builder(
-            itemCount: ads.length,
-            itemBuilder: (context, index) {
-              final ad = ads[index];
-              final imageBytes = decodeBase64Image(ad['imageBase64']);
-              return Card(
-                margin: const EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    imageBytes.isNotEmpty
-                        ? Image.memory(imageBytes, width: 100, height: 100, fit: BoxFit.cover)
-                        : Container(
-                            width: 100,
-                            height: 100,
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.image_not_supported),
-                          ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(ad['title'], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                          Text('Data: ${ad['date']}'),
-                          Text('Quantidade: ${ad['quantity']}'),
-                          Row(
-                            children: [
-                              GestureDetector(
-                                onTap: () => _editAd(context,index),
-                                child: const Chip(label: Text('Editar')),
-                              ),
-                              const SizedBox(width: 8),
-                              GestureDetector(
-                                onTap: () => _deleteAd(index),
-                                child: const Chip(label: Text('Desativar')),
-                              ),
-                            ],
-                          )
-                        ],
+          child: _ads.isEmpty
+              ? const Center(child: Text('Nenhum anúncio publicado.'))
+              : ListView.builder(
+                  itemCount: _ads.length,
+                  itemBuilder: (context, index) {
+                    final ad = _ads[index];
+                    final String productName = ad['productName'] ?? '';
+                    final String category = ad['category'] ?? '';
+                    final String description = ad['description'] ?? '';
+                    final String price = ad['price']?.toString() ?? '';
+                    String? imageBase64;
+
+                    if (ad['imagesBase64'] != null &&
+                        ad['imagesBase64'] is List &&
+                        (ad['imagesBase64'] as List).isNotEmpty) {
+                      imageBase64 = (ad['imagesBase64'] as List).first as String;
+                    }
+
+                    return Card(
+                      margin: const EdgeInsets.all(10),
+                      child: ListTile(
+                        leading: imageBase64 != null
+                            ? Image.memory(
+                                base64Decode(imageBase64),
+                                width: 60,
+                                height: 60,
+                                fit: BoxFit.cover,
+                              )
+                            : const Icon(Icons.image, size: 60),
+                        title: Text(productName),
+                        subtitle: Text(
+                          '$category\nPreço: $price€\n$description',
+                          softWrap: true,
+                        ),
+                        isThreeLine: true,
                       ),
-                    )
-                  ],
+                    );
+                  },
                 ),
-              );
-            },
-          ),
         ),
         Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ElevatedButton(
-            onPressed: () {
-              // Criar anúncio
-            },
-            child: const Text('Criar Anúncio'),
+          padding: const EdgeInsets.all(4.0),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _navigateToCreateAd,
+              child: const Text('Criar Anúncio'),
+            ),
           ),
-        )
+        ),
       ],
     );
   }
 }
-

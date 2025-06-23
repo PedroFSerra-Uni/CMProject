@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "750817095550",
+    "firebase_url": "https://hf-bd23-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "hf-bd23",
     "storage_bucket": "hf-bd23.firebasestorage.app"
   },
