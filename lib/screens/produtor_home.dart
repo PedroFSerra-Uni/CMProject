@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:project/screens/search_screen.dart';
 import '../widgets/base_screen.dart';
 import 'produtor_home_content.dart';
 import 'sales_screen.dart';
+import 'message_home_screen.dart';
 
 class ProdutorHome extends StatefulWidget {
   const ProdutorHome({super.key});
@@ -15,8 +17,8 @@ class _ProdutorHomeState extends State<ProdutorHome> {
 
   final List<Widget> _pages = [
     const ProdutorHomeContent(),
-    const Center(child: Text('Pesquisa')),
-    const Center(child: Text('Mensagens')),
+    const SearchScreen(),
+    MessageHomeScreen(),
     const SalesScreen(),
     const Center(child: Text('Minha Loja')),
   ];

@@ -1,8 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:project/screens/settings_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'screens/produtor_home.dart';
+import 'screens/product_detail_screen.dart';
+import 'screens/ad_detail_screen.dart';
+import 'screens/search_screen.dart';
+import 'screens/historico_screen.dart';
+import 'screens/faq_screen.dart';
+import 'screens/assistente_voz_screen.dart';
+import 'screens/profile_view_screen.dart';
+import 'screens/profile_edit_screen.dart';
+
+
 
 
 void main() async {
@@ -25,9 +37,18 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
-        '/produtor-home': (context) => const DummyScreen('Produtor Home'),
+        '/search-screen': (context) => const SearchScreen(),
+        '/produtor-home': (context) => const ProdutorHome(),
         '/utilizador-home': (context) => const DummyScreen('Utilizador Home'),
         '/admin-dashboard': (context) => const DummyScreen('Admin Dashboard'),
+        '/product-detail': (context) => const ProductDetailScreen(),
+        '/ad-detail': (context) => const AdDetailScreen(title: '', subtitle: ''),
+        '/historico': (context) => const HistoricoScreen(),
+        '/faq': (context) => const FaqScreen(),
+        '/voice-assist': (context) => const VoiceAssistScreen(),
+        '/profile-view-screen': (context) => const ProfileViewScreen(),
+        '/profile-edit-screen': (context) => const ProfileEditScreen(),
+        '/settings-screen': (context) => const SettingsScreen(),
       },
     );
   }
