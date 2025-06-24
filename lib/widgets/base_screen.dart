@@ -25,11 +25,16 @@ class BaseScreen extends StatelessWidget {
             Text('HelloFarmer'),
           ],
         ),
-        actions: const [
-          Icon(Icons.notifications),
-          SizedBox(width: 16),
-          Icon(Icons.account_circle),
-          SizedBox(width: 12),
+        actions: [
+          const Icon(Icons.notifications),
+          const SizedBox(width: 16),
+          IconButton(
+            icon: const Icon(Icons.account_circle),
+            onPressed: () {
+              Navigator.pushNamed(context, '/profile-view-screen');
+            },
+          ),
+          const SizedBox(width: 12),
         ],
       ),
       drawer: Drawer(

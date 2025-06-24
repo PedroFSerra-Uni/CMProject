@@ -1,7 +1,61 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class ProfileViewScreen extends StatelessWidget {
-  const ProfileViewScreen({super.key});
+import 'profile_edit_screen.dart'; // Importa o teu ficheiro de edição
+
+class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final _auth = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
+
+  String name = '';
+  String email = '';
+  String phone = '';
+  String description = '';
+  String farmName = '';
+  String location = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileData();
+  }
+
+  Future<void> _loadProfileData() async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return;
+
+    final doc = await _firestore.collection('users').doc(uid).get();
+    if (doc.exists) {
+      final data = doc.data()!;
+      setState(() {
+        name = data['name'] ?? '';
+        email = data['email'] ?? '';
+        phone = data['phone'] ?? '';
+        description = data['description'] ?? '';
+        farmName = data['farmName'] ?? '';
+        location = data['location'] ?? '';
+      });
+    }
+  }
+
+  Future<void> _goToEditProfile() async {
+    final updated = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ProfileEditScreen()),
+    );
+
+    if (updated == true) {
+      _loadProfileData(); // Atualiza os dados
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,13 +65,13 @@ class ProfileViewScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
-            onPressed: () => Navigator.pushNamed(context, '/profile-edit'),
+            onPressed: _goToEditProfile,
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView(
           children: [
             Center(
               child: CircleAvatar(
@@ -27,108 +81,34 @@ class ProfileViewScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            const Center(
-              child: Text(
-                'Zacarias da Horta',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
+            Center(
+              child: Text(name, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.phone),
+              title: Text(phone),
+            ),
+            ListTile(
+              leading: const Icon(Icons.email),
+              title: Text(email),
+            ),
+            const SizedBox(height: 16),
+            const Text('Descrição', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            const Center(
-              child: Text(
-                '+351 123 456 789',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
+            Text(description),
+            const Divider(height: 32),
+            ListTile(
+              leading: const Icon(Icons.agriculture),
+              title: Text(farmName),
             ),
-            const SizedBox(height: 4),
-            const Center(
-              child: Text(
-                'ZacariasHorta@gmail.com',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
+            ListTile(
+              leading: const Icon(Icons.location_on),
+              title: Text(location),
             ),
-            const SizedBox(height: 24),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'Descrição',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'Descrição de perfil.',
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Divider(height: 1),
-            const SizedBox(height: 24),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'Quinta do Zacarias',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                children: [
-                  const Text('4.5'),
-                  const Icon(Icons.star, color: Colors.amber, size: 20),
-                  const SizedBox(width: 16),
-                  const Text('Brigio do Lobo, Montijo'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildProfileButton(
-                    icon: Icons.bar_chart,
-                    label: 'Estatísticas',
-                    onPressed: () => Navigator.pushNamed(context, '/stats'),
-                  ),
-                  _buildProfileButton(
-                    icon: Icons.history,
-                    label: 'Histórico de Vendas',
-                    onPressed: () {},
-                  ),
-                  // Botão "Editar Perfil" removido
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildProfileButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onPressed,
-  }) {
-    return Column(
-      children: [
-        IconButton(
-          icon: Icon(icon, size: 30),
-          onPressed: onPressed,
-          style: IconButton.styleFrom(
-            backgroundColor: Colors.green.shade50,
-            padding: const EdgeInsets.all(16),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(label, style: const TextStyle(fontSize: 12)),
-      ],
     );
   }
 }

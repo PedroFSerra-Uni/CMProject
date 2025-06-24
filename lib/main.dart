@@ -59,11 +59,12 @@ class MyApp extends StatelessWidget {
         '/historico': (context) => const HistoricoScreen(),
         '/faq': (context) => const FAQScreen(),
         '/voice-assist': (context) => const VoiceAssistScreen(),
-        '/profile-view-screen': (context) => const ProfileViewScreen(),
+        '/profile-view-screen': (context) => const ProfileScreen(),
         '/profile-edit-screen': (context) => const ProfileEditScreen(),
         '/settings-screen': (context) => const SettingsScreen(),
         '/criar-banca': (context) => const CriarBancaScreen(),
         '/banca-home': (context) => const  BancaHomeScreen(),
+        // '/stats': (context) => const ProductsListScreen(),
       },
     );
   }

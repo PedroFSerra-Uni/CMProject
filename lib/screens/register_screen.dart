@@ -101,7 +101,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             TextButton(
               onPressed: () =>
-                  Navigator.pushReplacementNamed(context, '/login'),
+                  Navigator.pushReplacementNamed(context, '/'),
               child: const Text('Já tens conta? Inicia sessão'),
             ),
           ]),
