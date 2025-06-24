@@ -51,7 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF6A11CB), Color(0xFF2575FC)],
+              colors: [Color(0xFF2A815E), Color(0xFF2A815E)],
             ),
           ),
         ),
@@ -62,22 +62,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             _buildSectionHeader('Idioma'),
             _buildLanguageSetting(),
-            
+
             _buildSectionHeader('Privacidade'),
             _buildPrivacySettings(),
-            
+
             _buildSectionHeader('Notificações'),
             _buildNotificationSettings(),
-            
+
             _buildSectionHeader('Ajuda por voz'),
             _buildVoiceHelpSettings(),
-            
+
             _buildSectionHeader('Perguntas Frequentes'),
             _buildFaqSetting(),
-            
+
             _buildSectionHeader('Termos e condições'),
             _buildTermsSetting(),
-            
+
             const SizedBox(height: 30),
           ],
         ),
@@ -93,7 +93,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         style: const TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.bold,
-          color: Color(0xFF4A00E0),
+          color: Color(0xFF2A815E), // Alterado para verde
         ),
       ),
     );
@@ -238,7 +238,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String title,
     required String value,
     required IconData icon,
-    Color color = Colors.deepPurple,
+    Color color = const Color(0xFF2A815E), // Alterado para verde
     bool hasDivider = true,
     IconData? trailingIcon,
     VoidCallback? onTap,
@@ -331,25 +331,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.deepPurple.withOpacity(0.1),
+                  color: const Color(0xFF2A815E).withOpacity(0.1), // Verde com opacidade
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, color: Colors.deepPurple, size: 24),
+                child: Icon(icon, color: const Color(0xFF2A815E), size: 24), // Verde
               ),
               const SizedBox(width: 15),
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
               ),
               Switch(
                 value: value,
+                activeColor: const Color(0xFF2A815E),
                 onChanged: onChanged,
-                activeColor: Colors.deepPurple,
               ),
             ],
           ),
@@ -359,93 +356,73 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // Mostra o seletor de idiomas
   void _showLanguageSelector(bool isVoiceLanguage) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
-      ),
-      builder: (context) {
-        return Container(
+      builder: (_) {
+        return ListView.separated(
           padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                isVoiceLanguage ? 'Selecionar Idioma da Voz' : 'Selecionar Idioma',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF4A00E0),
-                ),
-              ),
-              const SizedBox(height: 15),
-              ...languages.map((language) {
-                return ListTile(
-                  title: Text(language),
-                  trailing: (isVoiceLanguage ? selectedVoiceLanguage : selectedLanguage) == language
-                      ? const Icon(Icons.check, color: Colors.deepPurple)
-                      : null,
-                  onTap: () {
-                    setState(() {
-                      if (isVoiceLanguage) {
-                        selectedVoiceLanguage = language;
-                      } else {
-                        selectedLanguage = language;
-                      }
-                    });
-                    Navigator.pop(context);
-                  },
-                );
-              }).toList(),
-              const SizedBox(height: 20),
-            ],
-          ),
+          itemCount: languages.length,
+          separatorBuilder: (_, __) => const Divider(),
+          itemBuilder: (_, index) {
+            String lang = languages[index];
+            bool isSelected = isVoiceLanguage
+                ? lang == selectedVoiceLanguage
+                : lang == selectedLanguage;
+
+            return ListTile(
+              title: Text(lang),
+              trailing: isSelected ? const Icon(Icons.check, color: Color(0xFF2A815E)) : null,
+              onTap: () {
+                setState(() {
+                  if (isVoiceLanguage) {
+                    selectedVoiceLanguage = lang;
+                  } else {
+                    selectedLanguage = lang;
+                  }
+                });
+                Navigator.pop(context);
+              },
+            );
+          },
         );
       },
     );
   }
 
-  // Mostra um diálogo de confirmação para logout
+  void _showComingSoon(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Funcionalidade em desenvolvimento...')),
+    );
+  }
+
   void _confirmLogout(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Terminar Sessão'),
-        content: const Text('Tem certeza que deseja terminar a sessão?'),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      builder: (_) => AlertDialog(
+        title: const Text('Terminar sessão'),
+        content: const Text('Tem a certeza que quer terminar a sessão?'),
         actions: [
           TextButton(
+            child: const Text('Cancelar'),
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
           ),
           TextButton(
+            child: const Text('Terminar sessão', style: TextStyle(color: Colors.red)),
             onPressed: () {
-              // Aqui você implementaria a lógica de logout
-              Navigator.pop(context); // Fecha o diálogo
-              Navigator.pop(context); // Volta para a tela anterior
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Sessão terminada com sucesso'),
-                  backgroundColor: Colors.green,
-                ),
-              );
+              Navigator.pop(context);
+              _logout();
             },
-            child: const Text('Terminar Sessão', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
     );
   }
 
-  // Mostra uma mensagem "Em breve" para funcionalidades não implementadas
-  void _showComingSoon(BuildContext context) {
+  void _logout() {
+    // Implementa a lógica de logout aqui
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Funcionalidade em desenvolvimento'),
-        backgroundColor: Colors.deepPurple,
-      ),
+      const SnackBar(content: Text('Sessão terminada.')),
     );
   }
 }

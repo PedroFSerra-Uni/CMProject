@@ -6,6 +6,11 @@ import 'package:flutter/material.dart';
 
 import '../widgets/base_screen.dart';
 import 'criar_banca_screen.dart';
+import 'message_home_screen.dart';
+import 'produtor_home_content.dart';
+import 'sales_screen.dart';
+import 'search_screen.dart';
+
 
 class BancaHomeScreen extends StatefulWidget {
   const BancaHomeScreen({super.key});
@@ -35,13 +40,32 @@ class _BancaHomeScreenState extends State<BancaHomeScreen> {
     }
   }
 
+  void _onTabSelected(int index) {
+  if (index == 0) {
+    Navigator.pushReplacementNamed(context, '/produtor-home');
+  } else if (index == 1) {
+    Navigator.pushReplacementNamed(context, '/search-screen');
+  } else if (index == 2) {
+    // Supondo que ainda não criaste esta:
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => MessageHomeScreen()),
+    );
+  } else if (index == 3) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => SalesScreen()),
+    );
+  } else if (index == 4) {
+    // Já estás na banca, não faz nada
+  }
+}
+
   @override
   Widget build(BuildContext context) {
     return BaseScreen(
       selectedIndex: 4,
-      onTabSelected: (index) {
-        // Navigate using your router or Navigator.push
-      },
+      onTabSelected: _onTabSelected,
       bottomNavItems: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
         BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Pesquisa'),

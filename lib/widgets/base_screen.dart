@@ -49,7 +49,7 @@ class BaseScreen extends StatelessWidget {
               title: const Text('Definições'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/definicoes');
+                Navigator.pushNamed(context, '/settings-screen');
               },
             ),
             ListTile(
