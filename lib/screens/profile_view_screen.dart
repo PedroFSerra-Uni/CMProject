@@ -15,6 +15,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
 
+  double ratingAverage = 0.0;
+  int ratingCount = 0;
+
   String name = '';
   String email = '';
   String phone = '';
@@ -42,6 +45,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
         description = data['description'] ?? '';
         farmName = data['farmName'] ?? '';
         location = data['location'] ?? '';
+
+        // ⭐ Rating
+        if (data.containsKey('ratingList') && data['ratingList'] is List) {
+          final List<dynamic> ratings = data['ratingList'];
+          ratingCount = ratings.length;
+          if (ratingCount > 0) {
+            final sum = ratings.fold<num>(0, (acc, val) => acc + (val ?? 0));
+            ratingAverage = sum / ratingCount;
+          }
+        } else {
+          // Alternativa: usa campos ratingAvg e ratingCount se existirem diretamente
+          ratingAverage = (data['ratingAvg'] ?? 0).toDouble();
+          ratingCount = data['ratingCount'] ?? 0;
+        }
       });
     }
   }
@@ -82,8 +99,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 16),
             Center(
-              child: Text(name, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              child: Text(
+                name,
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
             ),
+            const SizedBox(height: 16),
+
+            // ⭐ Avaliação do Produtor
+            const Text(
+              'Avaliação do Produtor',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.star, color: Colors.amber),
+                const SizedBox(width: 4),
+                Text(
+                  ratingCount > 0 ? '${ratingAverage.toStringAsFixed(1)} / 5' : 'Sem avaliações',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(width: 8),
+                if (ratingCount > 0)
+                  Text(
+                    '($ratingCount avaliação${ratingCount > 1 ? 's' : ''})',
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+              ],
+            ),
+
             const SizedBox(height: 16),
             ListTile(
               leading: const Icon(Icons.phone),
@@ -94,7 +139,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               title: Text(email),
             ),
             const SizedBox(height: 16),
-            const Text('Descrição', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Descrição',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             Text(description),
             const Divider(height: 32),
