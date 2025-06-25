@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -16,31 +17,6 @@ class _MapScreenState extends State<MapScreen> {
   final Set<Marker> markers = {};
   bool isLoading = true;
   String? errorMessage;
-
-  // Lista com morada + localização (sem coordenadas ainda)
-  final List<Map<String, dynamic>> nearbyStalls = [
-    {
-      'id': '1',
-      'name': 'Quinta do Zé',
-      'morada': 'Rua A',
-      'localizacao': 'Lisboa, Portugal',
-      'produtos': ['Hortícolas', 'Frutas']
-    },
-    {
-      'id': '2',
-      'name': 'Horta da Maria',
-      'morada': 'Av. B',
-      'localizacao': 'Lisboa, Portugal',
-      'produtos': ['Legumes', 'Ovos']
-    },
-    {
-      'id': '3',
-      'name': 'Banca do João',
-      'morada': 'Travessa C',
-      'localizacao': 'Lisboa, Portugal',
-      'produtos': ['Queijos', 'Enchidos']
-    },
-  ];
 
   @override
   void initState() {
@@ -92,19 +68,17 @@ class _MapScreenState extends State<MapScreen> {
         isLoading = false;
       });
 
-      await _addStallMarkers();
+      await _addUserMarker();
+      await _fetchAndPopulateStalls();
     } catch (e) {
       setState(() {
         isLoading = false;
-        errorMessage = 'Erro ao obter localização: ${e.toString()}';
+        errorMessage = 'Erro ao obter localização: $e';
       });
     }
   }
 
-  Future<void> _addStallMarkers() async {
-    markers.clear();
-
-    // Marcador da localização atual
+  Future<void> _addUserMarker() async {
     if (currentPosition != null) {
       markers.add(
         Marker(
@@ -114,35 +88,63 @@ class _MapScreenState extends State<MapScreen> {
           infoWindow: const InfoWindow(title: 'Sua Localização'),
         ),
       );
+      setState(() {});
     }
+  }
 
-    // Geocodificar cada banca e adicionar marcador
-    for (var stall in nearbyStalls) {
-      final endereco = '${stall['morada']}, ${stall['localizacao']}';
-      try {
-        List<Location> results = await locationFromAddress(endereco);
-        if (results.isNotEmpty) {
-          final location = results.first;
-          final latLng = LatLng(location.latitude, location.longitude);
+  Future<void> _fetchAndPopulateStalls() async {
+    final collection = FirebaseFirestore.instance.collection('bancas');
 
-          markers.add(
-            Marker(
-              markerId: MarkerId(stall['id']),
-              position: latLng,
-              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-              infoWindow: InfoWindow(
-                title: stall['name'],
-                snippet: stall['produtos'].join(', '),
-              ),
-              onTap: () => _showStallDetails(stall),
-            ),
-          );
+    try {
+      final querySnapshot = await collection.get();
 
-          setState(() {}); // Atualiza o mapa a cada marcador
-        }
-      } catch (e) {
-        print('Erro ao converter endereço: $endereco');
+      for (final doc in querySnapshot.docs) {
+        final data = doc.data();
+
+        final nome = data['nome'] ?? 'Sem nome';
+        final morada = data['morada'] ?? '';
+        final localizacao = data['localizacao'] ?? '';
+
+        final endereco = morada.trim().isNotEmpty ? '$morada, Portugal' : localizacao;
+
+        final stall = {
+          'id': doc.id,
+          'name': nome,
+          'morada': endereco,
+          'produtos': List<String>.from(data['mercados'] ?? []),
+        };
+
+        await _addStallMarker(stall);
       }
+    } catch (e) {
+      // erro silencioso
+    }
+  }
+
+  Future<void> _addStallMarker(Map<String, dynamic> stall) async {
+    try {
+      final results = await locationFromAddress(stall['morada']);
+
+      if (results.isNotEmpty) {
+        final loc = results.first;
+        final latLng = LatLng(loc.latitude, loc.longitude);
+
+        markers.add(
+          Marker(
+            markerId: MarkerId(stall['id']),
+            position: latLng,
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+            infoWindow: InfoWindow(
+              title: stall['name'],
+              snippet: stall['produtos'].join(', '),
+            ),
+            onTap: () => _showStallDetails(stall),
+          ),
+        );
+        setState(() {});
+      }
+    } catch (e) {
+      // erro silencioso
     }
   }
 
@@ -161,8 +163,7 @@ class _MapScreenState extends State<MapScreen> {
                 style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              Text('Morada: ${stall['morada']}'),
-              Text('Localização: ${stall['localizacao']}'),
+              Text("Morada: ${stall['morada']}"),
               const SizedBox(height: 8),
               const Text('Produtos:'),
               ...stall['produtos'].map<Widget>((p) => Padding(
@@ -252,7 +253,6 @@ class _MapScreenState extends State<MapScreen> {
       markers: markers,
       myLocationEnabled: true,
       myLocationButtonEnabled: false,
-      onTap: (LatLng position) {},
     );
   }
 }
