@@ -48,7 +48,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BrightnessDetector( // 👈 Wrap with BrightnessDetector
+    return BrightnessDetector(
       builder: (isDark) {
         return MaterialApp(
           title: 'Hello Farmer',

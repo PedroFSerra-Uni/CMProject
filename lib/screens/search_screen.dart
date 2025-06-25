@@ -29,7 +29,7 @@ class _SearchScreenState extends State<SearchScreen> {
       appBar: AppBar(
         leading: Builder(
           builder: (context) => IconButton(
-            icon: const Icon(Icons.menu),
+            icon: const Icon(Icons.arrow_forward_ios),
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),

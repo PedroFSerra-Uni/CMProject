@@ -1,21 +1,25 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class EditarBancaScreen extends StatefulWidget {
   final String nomeBanca;
   final String descricao;
   final String localizacao; // Endereço ou morada
-  final String coordenadas; // Latitude e longitude em texto
   final List<String> mercados;
   final List<Map<String, dynamic>> criticas;
+  final List<String> imagensBase64;
 
   const EditarBancaScreen({
     super.key,
     required this.nomeBanca,
     required this.descricao,
     required this.localizacao,
-    required this.coordenadas,
     required this.mercados,
     required this.criticas,
+    required this.imagensBase64,
   });
 
   @override
@@ -28,19 +32,10 @@ class _EditarBancaScreenState extends State<EditarBancaScreen> {
   late TextEditingController descricaoController;
   late TextEditingController novoMercadoController;
 
-  late String localizacaoSelecionada;
   List<String> mercadosHabitais = [];
+  List<String> imagensBase64 = [];
 
-  final List<String> locaisDisponiveis = [
-    'Rua das Flores, 123',
-    'Avenida Central, 45',
-    'Praça da Liberdade, 10'
-  ];
-
-  List<String> imagens = [
-    'https://picsum.photos/id/237/300/150',
-    'https://picsum.photos/id/238/300/150',
-  ];
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -49,8 +44,8 @@ class _EditarBancaScreenState extends State<EditarBancaScreen> {
     moradaController = TextEditingController(text: widget.localizacao);
     descricaoController = TextEditingController(text: widget.descricao);
     novoMercadoController = TextEditingController();
-    localizacaoSelecionada = widget.localizacao;
     mercadosHabitais = List.from(widget.mercados);
+    imagensBase64 = List.from(widget.imagensBase64);
   }
 
   @override
@@ -80,10 +75,21 @@ class _EditarBancaScreenState extends State<EditarBancaScreen> {
     }
   }
 
-  void selecionarNovaImagem() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Funcionalidade de adicionar imagem ainda não implementada.')),
-    );
+  Future<void> selecionarNovaImagem() async {
+    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery, maxWidth: 800);
+    if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
+      final base64String = base64Encode(bytes);
+      setState(() {
+        imagensBase64.add(base64String);
+      });
+    }
+  }
+
+  void removerImagem(int index) {
+    setState(() {
+      imagensBase64.removeAt(index);
+    });
   }
 
   InputDecoration _inputDecoration({String? hintText}) {
@@ -111,9 +117,9 @@ class _EditarBancaScreenState extends State<EditarBancaScreen> {
       'nomeBanca': nome,
       'descricao': descricao,
       'localizacao': morada,
-      'coordenadas': widget.coordenadas,
       'mercados': mercadosHabitais,
       'criticas': widget.criticas,
+      'imagensBase64': imagensBase64,
     });
   }
 
@@ -140,40 +146,12 @@ class _EditarBancaScreenState extends State<EditarBancaScreen> {
             const Text('Detalhes', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 10),
 
-            const Text('Localização:'),
-            DropdownButton<String>(
-              value: localizacaoSelecionada,
-              isExpanded: true,
-              onChanged: (String? newValue) {
-                if (newValue != null) {
-                  setState(() {
-                    localizacaoSelecionada = newValue;
-                    moradaController.text = newValue;
-                  });
-                }
-              },
-              items: locaisDisponiveis
-                  .map((value) => DropdownMenuItem(value: value, child: Text(value)))
-                  .toList(),
-            ),
-
-            const SizedBox(height: 10),
-            const Text('Morada:'),
+            const Text('Localização:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
             TextField(
               controller: moradaController,
-              decoration: _inputDecoration(hintText: 'Digite a morada'),
-              onChanged: (value) {
-                if (localizacaoSelecionada != value) {
-                  setState(() {
-                    localizacaoSelecionada = value;
-                  });
-                }
-              },
+              decoration: _inputDecoration(hintText: 'Digite a localização'),
             ),
-
-            const SizedBox(height: 10),
-            const Text('Coordenadas:'),
-            Text(widget.coordenadas, style: const TextStyle(fontSize: 14, color: Colors.grey)),
 
             const SizedBox(height: 20),
             const Text('Mercados Habituais', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
@@ -216,23 +194,45 @@ class _EditarBancaScreenState extends State<EditarBancaScreen> {
               height: 150,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: imagens.length + 1,
+                itemCount: imagensBase64.length + 1,
                 itemBuilder: (context, index) {
-                  if (index < imagens.length) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: Image.network(
-                        imagens[index],
-                        width: 300,
-                        height: 150,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          width: 300,
-                          height: 150,
-                          color: Colors.grey,
-                          child: const Center(child: Text('Imagem não encontrada')),
+                  if (index < imagensBase64.length) {
+                    Uint8List imageBytes = base64Decode(imagensBase64[index]);
+                    return Stack(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.memory(
+                              imageBytes,
+                              width: 300,
+                              height: 150,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                width: 300,
+                                height: 150,
+                                color: Colors.grey,
+                                child: const Center(child: Text('Imagem não encontrada')),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
+                        Positioned(
+                          top: 5,
+                          right: 15,
+                          child: GestureDetector(
+                            onTap: () => removerImagem(index),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.black54,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.close, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
                     );
                   } else {
                     return GestureDetector(

@@ -205,8 +205,16 @@ class _CriarBancaScreenState extends State<CriarBancaScreen> {
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
-                  ..._imageBase64List.map((base64) {
-                    return Container(
+                  ..._imageBase64List.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  String base64 = entry.value;
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _imageBase64List.removeAt(index);
+                      });
+                    },
+                    child: Container(
                       margin: const EdgeInsets.only(right: 8),
                       width: 100,
                       height: 100,
@@ -218,8 +226,10 @@ class _CriarBancaScreenState extends State<CriarBancaScreen> {
                           fit: BoxFit.cover,
                         ),
                       ),
-                    );
-                  }),
+                    ),
+                  );
+                }),
+
                   GestureDetector(
                     onTap: _pickImages,
                     child: Container(
