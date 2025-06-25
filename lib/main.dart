@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:project/utils/brightness_detector.dart';
 import 'package:project/screens/banca_screen.dart';
+import 'package:project/screens/consumidor_home_screen.dart';
+import 'screens/producer_ad_detail_screen.dart';
+import 'screens/stats_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/search_screen.dart';
@@ -15,7 +19,6 @@ import 'screens/profile_edit_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/criar_banca_screen.dart';
 import 'screens/notification_service.dart';
-import 'screens/map_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,30 +48,39 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Hello Farmer',
-      theme: ThemeData(primarySwatch: Colors.green),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const LoginScreen(),
-        '/register': (context) => const RegisterScreen(),
-        '/search-screen': (context) => const SearchScreen(),
-        '/produtor-home': (context) => const ProdutorHome(),
-        '/utilizador-home': (context) => const DummyScreen('Utilizador Home'),
-        '/admin-dashboard': (context) => const DummyScreen('Admin Dashboard'),
-        '/product-detail': (context) => const ProductDetailScreen(),
-        '/ad-detail': (context) =>
-            const AdDetailScreen(title: '', subtitle: ''),
-        '/historico': (context) => const HistoricoScreen(),
-        '/faq': (context) => const FAQScreen(),
-        '/voice-assist': (context) => const VoiceAssistScreen(),
-        '/profile-view-screen': (context) => const ProfileScreen(),
-        '/profile-edit-screen': (context) => const ProfileEditScreen(),
-        '/settings-screen': (context) => const SettingsScreen(),
-        '/criar-banca': (context) => const CriarBancaScreen(),
-        '/banca-home': (context) => const  BancaHomeScreen(),
-        '/map-screen': (context) => const MapScreen(),
-        // '/stats': (context) => const ProductsListScreen(),
+    return BrightnessDetector( // 👈 Wrap with BrightnessDetector
+      builder: (isDark) {
+        return MaterialApp(
+          title: 'Hello Farmer',
+          theme: isDark
+              ? ThemeData.dark().copyWith(
+                  colorScheme: const ColorScheme.dark(primary: Colors.green),
+                )
+              : ThemeData.light().copyWith(
+                  primaryColor: Colors.green,
+                  colorScheme: const ColorScheme.light(primary: Colors.green),
+                ),
+          initialRoute: '/',
+          routes: {
+            '/': (context) => const LoginScreen(),
+            '/register': (context) => const RegisterScreen(),
+            '/search-screen': (context) => const SearchScreen(),
+            '/produtor-home': (context) => const ProdutorHome(),
+            '/utilizador-home': (context) => const ConsumidorHomeScreen(),
+            '/admin-dashboard': (context) => const DummyScreen('Admin Dashboard'),
+            '/product-detail': (context) => const ProductDetailScreen(),
+            '/ad-detail': (context) =>
+                ProducerAdDetailScreen(title: '', subtitle: '', imageUrl: ''),
+            '/historico': (context) => const HistoricoScreen(),
+            '/faq': (context) => const FAQScreen(),
+            '/voice-assist': (context) => const VoiceAssistScreen(),
+            '/profile-view-screen': (context) => const ProfileScreen(),
+            '/profile-edit-screen': (context) => const ProfileEditScreen(),
+            '/settings-screen': (context) => const SettingsScreen(),
+            '/criar-banca': (context) => const CriarBancaScreen(),
+            '/banca-home': (context) => const BancaHomeScreen(),
+          },
+        );
       },
     );
   }
@@ -86,4 +98,3 @@ class DummyScreen extends StatelessWidget {
     );
   }
 }
-
