@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -16,27 +17,28 @@ class _MapScreenState extends State<MapScreen> {
   bool isLoading = true;
   String? errorMessage;
 
+  // Lista com morada + localização (sem coordenadas ainda)
   final List<Map<String, dynamic>> nearbyStalls = [
     {
       'id': '1',
       'name': 'Quinta do Zé',
-      'position': const LatLng(38.7071, -9.13549),
-      'distance': 0.5,
-      'products': ['Hortícolas', 'Frutas']
+      'morada': 'Rua A',
+      'localizacao': 'Lisboa, Portugal',
+      'produtos': ['Hortícolas', 'Frutas']
     },
     {
       'id': '2',
       'name': 'Horta da Maria',
-      'position': const LatLng(38.7102, -9.1367),
-      'distance': 1.2,
-      'products': ['Legumes', 'Ovos']
+      'morada': 'Av. B',
+      'localizacao': 'Lisboa, Portugal',
+      'produtos': ['Legumes', 'Ovos']
     },
     {
       'id': '3',
       'name': 'Banca do João',
-      'position': const LatLng(38.7053, -9.1328),
-      'distance': 0.8,
-      'products': ['Queijos', 'Enchidos']
+      'morada': 'Travessa C',
+      'localizacao': 'Lisboa, Portugal',
+      'produtos': ['Queijos', 'Enchidos']
     },
   ];
 
@@ -51,7 +53,7 @@ class _MapScreenState extends State<MapScreen> {
     if (!serviceEnabled) {
       setState(() {
         isLoading = false;
-        errorMessage = 'Serviço de localização desativado. Por favor, ative nas configurações.';
+        errorMessage = 'Serviço de localização desativado.';
       });
       return;
     }
@@ -71,7 +73,7 @@ class _MapScreenState extends State<MapScreen> {
     if (permission == LocationPermission.deniedForever) {
       setState(() {
         isLoading = false;
-        errorMessage = 'Permissão permanentemente negada. Ative nas configurações do app.';
+        errorMessage = 'Permissão permanentemente negada.';
       });
       return;
     }
@@ -87,9 +89,10 @@ class _MapScreenState extends State<MapScreen> {
 
       setState(() {
         currentPosition = position;
-        _updateMarkers();
         isLoading = false;
       });
+
+      await _addStallMarkers();
     } catch (e) {
       setState(() {
         isLoading = false;
@@ -98,9 +101,10 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  void _updateMarkers() {
+  Future<void> _addStallMarkers() async {
     markers.clear();
 
+    // Marcador da localização atual
     if (currentPosition != null) {
       markers.add(
         Marker(
@@ -112,19 +116,33 @@ class _MapScreenState extends State<MapScreen> {
       );
     }
 
+    // Geocodificar cada banca e adicionar marcador
     for (var stall in nearbyStalls) {
-      markers.add(
-        Marker(
-          markerId: MarkerId(stall['id']),
-          position: stall['position'],
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-          infoWindow: InfoWindow(
-            title: stall['name'],
-            snippet: '${stall['distance']} km - ${stall['products'].join(', ')}',
-          ),
-          onTap: () => _showStallDetails(stall),
-        ),
-      );
+      final endereco = '${stall['morada']}, ${stall['localizacao']}';
+      try {
+        List<Location> results = await locationFromAddress(endereco);
+        if (results.isNotEmpty) {
+          final location = results.first;
+          final latLng = LatLng(location.latitude, location.longitude);
+
+          markers.add(
+            Marker(
+              markerId: MarkerId(stall['id']),
+              position: latLng,
+              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+              infoWindow: InfoWindow(
+                title: stall['name'],
+                snippet: stall['produtos'].join(', '),
+              ),
+              onTap: () => _showStallDetails(stall),
+            ),
+          );
+
+          setState(() {}); // Atualiza o mapa a cada marcador
+        }
+      } catch (e) {
+        print('Erro ao converter endereço: $endereco');
+      }
     }
   }
 
@@ -140,21 +158,17 @@ class _MapScreenState extends State<MapScreen> {
             children: [
               Text(
                 stall['name'],
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              Text('Distância: ${stall['distance']} km'),
+              Text('Morada: ${stall['morada']}'),
+              Text('Localização: ${stall['localizacao']}'),
               const SizedBox(height: 8),
               const Text('Produtos:'),
-              ...stall['products'].map<Widget>((product) =>
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: Text('- $product'),
-                ),
-              ).toList(),
+              ...stall['produtos'].map<Widget>((p) => Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Text('- $p'),
+                  )),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
@@ -179,6 +193,7 @@ class _MapScreenState extends State<MapScreen> {
               setState(() {
                 isLoading = true;
                 errorMessage = null;
+                markers.clear();
               });
               _checkLocationPermissions();
             },
@@ -213,11 +228,7 @@ class _MapScreenState extends State<MapScreen> {
           children: [
             const Icon(Icons.location_off, size: 50, color: Colors.red),
             const SizedBox(height: 16),
-            Text(
-              errorMessage!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16),
-            ),
+            Text(errorMessage!, textAlign: TextAlign.center),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => Geolocator.openLocationSettings(),
@@ -233,9 +244,7 @@ class _MapScreenState extends State<MapScreen> {
     }
 
     return GoogleMap(
-      onMapCreated: (controller) {
-        mapController = controller;
-      },
+      onMapCreated: (controller) => mapController = controller,
       initialCameraPosition: CameraPosition(
         target: LatLng(currentPosition!.latitude, currentPosition!.longitude),
         zoom: 14,
