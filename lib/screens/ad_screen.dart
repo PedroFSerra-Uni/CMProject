@@ -298,7 +298,7 @@ class _CreateAdScreenState extends State<CreateAdScreen> {
                   child: ElevatedButton(
                     onPressed: _cancel,
                     style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
-                    child: const Text('Cancelar'),
+                    child: const Text('Limpar'),
                   ),
                 ),
                 const SizedBox(width: 8),

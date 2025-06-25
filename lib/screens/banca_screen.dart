@@ -69,9 +69,7 @@ class _BancaHomeScreenState extends State<BancaHomeScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(bancaData!['nome'] ?? 'Minha Banca'),
-      ),
+      
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
