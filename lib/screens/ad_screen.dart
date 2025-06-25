@@ -7,7 +7,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'notification_service.dart';
 
-
 class CreateAdScreen extends StatefulWidget {
   const CreateAdScreen({Key? key}) : super(key: key);
 
@@ -16,9 +15,6 @@ class CreateAdScreen extends StatefulWidget {
 }
 
 class _CreateAdScreenState extends State<CreateAdScreen> {
-
-  
-
   final _productNameController = TextEditingController();
   String? _selectedCategory;
   final List<String> _categories = ['Vegetal', 'Fruta', 'Legume', 'Outros'];
@@ -42,20 +38,50 @@ class _CreateAdScreenState extends State<CreateAdScreen> {
 
   Future<void> _pickImages() async {
     try {
-      final List<XFile>? pickedFiles = await _picker.pickMultiImage();
-      if (pickedFiles != null && pickedFiles.isNotEmpty) {
-        List<String> base64Images = [];
-        for (var file in pickedFiles) {
-          final bytes = await File(file.path).readAsBytes();
-          base64Images.add(base64Encode(bytes));
-        }
-        setState(() {
-          _imageBase64List = base64Images;
-        });
-      }
+      showModalBottomSheet(
+        context: context,
+        builder: (_) => SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Selecionar da Galeria'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final List<XFile>? pickedFiles = await _picker.pickMultiImage();
+                  if (pickedFiles != null && pickedFiles.isNotEmpty) {
+                    List<String> base64Images = [];
+                    for (var file in pickedFiles) {
+                      final bytes = await File(file.path).readAsBytes();
+                      base64Images.add(base64Encode(bytes));
+                    }
+                    setState(() {
+                      _imageBase64List = base64Images;
+                    });
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Tirar Foto com Câmera'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
+                  if (photo != null) {
+                    final bytes = await File(photo.path).readAsBytes();
+                    setState(() {
+                      _imageBase64List.add(base64Encode(bytes));
+                    });
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao escolher imagens: $e')),
+        SnackBar(content: Text('Erro ao escolher imagem: $e')),
       );
     }
   }
@@ -103,87 +129,85 @@ class _CreateAdScreenState extends State<CreateAdScreen> {
     );
   }
 
- Future<void> _publishAd() async {
-  final productName = _productNameController.text.trim();
-  final category = _selectedCategory;
-  final images = _imageBase64List;
-  final deliveryOptions = {
-    'entrega_domicilio': _deliveryHome,
-    'consumidor_recolhe': _consumerPickup,
-    'entrega_transportadora': _courierDelivery,
-  };
-  final minQuantity = _minQuantityController.text.trim();
-  final unit = _selectedUnit;
-  final price = _priceController.text.trim();
-  final description = _descriptionController.text.trim();
+  Future<void> _publishAd() async {
+    final productName = _productNameController.text.trim();
+    final category = _selectedCategory;
+    final images = _imageBase64List;
+    final deliveryOptions = {
+      'entrega_domicilio': _deliveryHome,
+      'consumidor_recolhe': _consumerPickup,
+      'entrega_transportadora': _courierDelivery,
+    };
+    final minQuantity = _minQuantityController.text.trim();
+    final unit = _selectedUnit;
+    final price = _priceController.text.trim();
+    final description = _descriptionController.text.trim();
 
-  // Basic validation
-  if (productName.isEmpty ||
-      category == null ||
-      images.isEmpty ||
-      (!deliveryOptions.containsValue(true)) ||
-      minQuantity.isEmpty ||
-      unit == null ||
-      price.isEmpty ||
-      description.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Por favor, preencha todos os campos obrigatórios e selecione pelo menos uma opção de entrega.')),
+    if (productName.isEmpty ||
+        category == null ||
+        images.isEmpty ||
+        (!deliveryOptions.containsValue(true)) ||
+        minQuantity.isEmpty ||
+        unit == null ||
+        price.isEmpty ||
+        description.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Por favor, preencha todos os campos obrigatórios e selecione pelo menos uma opção de entrega.')),
+      );
+      return;
+    }
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('É necessário estar autenticado para publicar um anúncio.')),
+      );
+      return;
+    }
+
+    final adRef = _database.child('ads').push();
+
+    final adData = {
+      'productName': productName,
+      'category': category,
+      'imagesBase64': images,
+      'deliveryOptions': deliveryOptions,
+      'minQuantity': minQuantity,
+      'unit': unit,
+      'price': price,
+      'description': description,
+      'date': DateTime.now().toIso8601String(),
+      'userId': user.uid,
+    };
+
+    try {
+      await adRef.set(adData);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Anúncio publicado com sucesso!')),
+      );
+      _cancel();
+      Navigator.pop(context, true);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao publicar anúncio: $e')),
+      );
+    }
+
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      'Anúncio Criado!',
+      'Seu anúncio "$productName" foi publicado com sucesso.',
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'default_channel_id',
+          'Anúncios',
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: 'logo',
+        ),
+      ),
     );
-    return;
   }
-
-  // Get current user from FirebaseAuth
-  final user = FirebaseAuth.instance.currentUser;
-  if (user == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('É necessário estar autenticado para publicar um anúncio.')),
-    );
-    return;
-  }
-
-  final adRef = _database.child('ads').push();
-
-  final adData = {
-    'productName': productName,
-    'category': category,
-    'imagesBase64': images,
-    'deliveryOptions': deliveryOptions,
-    'minQuantity': minQuantity,
-    'unit': unit,
-    'price': price,
-    'description': description,
-    'date': DateTime.now().toIso8601String(),
-    'userId': user.uid,  // Add the logged-in user's UID here
-  };
-
-  try {
-    await adRef.set(adData);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Anúncio publicado com sucesso!')),
-    );
-    _cancel();
-    Navigator.pop(context, true);
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Erro ao publicar anúncio: $e')),
-    );
-  }
-  await flutterLocalNotificationsPlugin.show(
-  0,
-  'Anúncio Criado!',
-  'Seu anúncio "$productName" foi publicado com sucesso.',
-  const NotificationDetails(
-    android: AndroidNotificationDetails(
-    'default_channel_id',
-    'Anúncios',
-    importance: Importance.high,
-    priority: Priority.high,
-    icon: 'logo',
-  ),
-  ),
-);
-}
-
 
   @override
   void dispose() {
@@ -212,9 +236,7 @@ class _CreateAdScreenState extends State<CreateAdScreen> {
             DropdownButtonFormField<String>(
               decoration: const InputDecoration(labelText: 'Categoria'),
               value: _selectedCategory,
-              items: _categories
-                  .map((cat) => DropdownMenuItem(value: cat, child: Text(cat)))
-                  .toList(),
+              items: _categories.map((cat) => DropdownMenuItem(value: cat, child: Text(cat))).toList(),
               onChanged: (val) => setState(() => _selectedCategory = val),
             ),
             const SizedBox(height: 10),
@@ -270,9 +292,7 @@ class _CreateAdScreenState extends State<CreateAdScreen> {
                   child: DropdownButtonFormField<String>(
                     decoration: const InputDecoration(labelText: 'Unidade'),
                     value: _selectedUnit,
-                    items: _units
-                        .map((u) => DropdownMenuItem(value: u, child: Text(u)))
-                        .toList(),
+                    items: _units.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
                     onChanged: (val) => setState(() => _selectedUnit = val),
                   ),
                 ),

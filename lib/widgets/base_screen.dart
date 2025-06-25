@@ -71,6 +71,14 @@ class BaseScreen extends StatelessWidget {
                 Navigator.pushNamed(context, '/assistente-voz');
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.map),
+              title: const Text('Mapa'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/map-screen');
+              },
+            ),
           ],
         ),
       ),
