@@ -18,25 +18,23 @@ class BaseScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Row(
-          children: [
-            Icon(Icons.agriculture),
-            SizedBox(width: 8),
-            Text('HelloFarmer'),
-          ],
-        ),
-        actions: [
-          const Icon(Icons.notifications),
-          const SizedBox(width: 16),
-          IconButton(
-            icon: const Icon(Icons.account_circle),
-            onPressed: () {
-              Navigator.pushNamed(context, '/profile-view-screen');
-            },
-          ),
-          const SizedBox(width: 12),
-        ],
+      title: Image.asset(
+        'assets/imagens/HelloFarmerLogo.png',  
+        height: 200,                       
+        fit: BoxFit.contain,
       ),
+      actions: [
+        const Icon(Icons.notifications),
+        const SizedBox(width: 16),
+        IconButton(
+          icon: const Icon(Icons.account_circle),
+          onPressed: () {
+            Navigator.pushNamed(context, '/profile-view-screen');
+          },
+        ),
+        const SizedBox(width: 12),
+      ],
+    ),
       drawer: Drawer(
         child: ListView(
           children: [

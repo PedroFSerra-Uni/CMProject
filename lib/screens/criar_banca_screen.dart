@@ -152,10 +152,6 @@ class _CriarBancaScreenState extends State<CriarBancaScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Criar Banca'),
-        backgroundColor: Colors.green[700],
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

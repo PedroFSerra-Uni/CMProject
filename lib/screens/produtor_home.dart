@@ -5,6 +5,9 @@ import 'produtor_home_content.dart';
 import 'sales_screen.dart';
 import 'message_home_screen.dart';
 import 'criar_banca_screen.dart';
+import 'banca_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 
 class ProdutorHome extends StatefulWidget {
@@ -17,13 +20,40 @@ class ProdutorHome extends StatefulWidget {
 class _ProdutorHomeState extends State<ProdutorHome> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = [
-    const ProdutorHomeContent(),
-    const SearchScreen(),
-    MessageHomeScreen(),
-    const SalesScreen(),
-    const  CriarBancaScreen(),
-  ];
+  List<Widget> _pages = [
+  const ProdutorHomeContent(),
+  const SearchScreen(),
+  MessageHomeScreen(),
+  const SalesScreen(),
+  const SizedBox(), // placeholder for banca screen
+];
+
+@override
+void initState() {
+  super.initState();
+  _setupBancaScreen();
+}
+
+Future<void> _setupBancaScreen() async {
+  bool hasBanca = await checkIfUserHasBanca();
+  setState(() {
+    _pages[4] = hasBanca ? const BancaHomeScreen() : const CriarBancaScreen();
+  });
+}
+
+Future<bool> checkIfUserHasBanca() async {
+  final userId = FirebaseAuth.instance.currentUser?.uid;
+  if (userId == null) return false;
+
+  final doc = await FirebaseFirestore.instance
+      .collection('bancas')
+      .doc(userId)
+      .get();
+
+  return doc.exists;
+}
+
+
 
   void _onTabTapped(int index) {
     setState(() {

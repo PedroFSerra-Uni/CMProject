@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'ad_detail_screen.dart';
+import 'producer_ad_detail_screen.dart';
+
 
 class ProdutorHomeContent extends StatelessWidget {
   const ProdutorHomeContent({super.key});
@@ -90,11 +91,15 @@ class HorizontalAdList extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => AdDetailScreen(
-                  title: ad['title']!,
-                  subtitle: ad['subtitle']!,
-                ),
-              ),
+              builder: (_) => ProducerAdDetailScreen(
+              title: ad['title']!,
+              subtitle: ad['subtitle']!,
+              imageUrl: 'https://via.placeholder.com/400x200.png?text=${Uri.encodeComponent(ad['title']!)}',
+            ),
+
+
+            ),
+
             );
           },
 
