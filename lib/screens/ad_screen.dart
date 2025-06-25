@@ -74,7 +74,6 @@ class _CreateAdScreenState extends State<CreateAdScreen> {
   }
 
   void _preview() {
-    // Pode ser implementado conforme necessidade. Exemplo simples:
     showDialog(
       context: context,
       builder: (_) => AlertDialog(

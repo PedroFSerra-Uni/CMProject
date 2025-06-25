@@ -205,6 +205,19 @@ class _PublishedAdsState extends State<PublishedAds> {
                     final String category = ad['category'] ?? '';
                     final String description = ad['description'] ?? '';
                     final String price = ad['price']?.toString() ?? '';
+                    final Map<String, bool> options =
+    (ad['deliveryOptions'] as Map).map((key, value) => MapEntry(key.toString(), value == true));
+
+                    final Map<String, String> readableLabels = {
+                      'entrega_domicilio': 'Entrega ao domicílio',
+                      'consumidor_recolhe': 'Recolha pelo consumidor',
+                      'entrega_transportadora': 'Entrega por transportadora',
+                    };
+                    final String deliveryType = options.entries
+                    .where((entry) => entry.value)
+                    .map((entry) => readableLabels[entry.key] ?? entry.key)
+                    .join('\n');
+
                     String? imageBase64;
 
                     if (ad['imagesBase64'] != null &&
@@ -226,7 +239,7 @@ class _PublishedAdsState extends State<PublishedAds> {
                             : const Icon(Icons.image, size: 60),
                         title: Text(productName),
                         subtitle: Text(
-                          '$category\nPreço: $price€\n$description',
+                          '$category\nPreço: $price€\n$description\nEntrega: $deliveryType',
                           softWrap: true,
                         ),
                         isThreeLine: true,
