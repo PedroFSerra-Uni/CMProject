@@ -15,6 +15,7 @@ import 'screens/profile_edit_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/criar_banca_screen.dart';
 import 'screens/notification_service.dart';
+import 'screens/map_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -66,6 +67,7 @@ class MyApp extends StatelessWidget {
         '/settings-screen': (context) => const SettingsScreen(),
         '/criar-banca': (context) => const CriarBancaScreen(),
         '/banca-home': (context) => const  BancaHomeScreen(),
+        '/map-screen': (context) => const MapScreen(),
         // '/stats': (context) => const ProductsListScreen(),
       },
     );
