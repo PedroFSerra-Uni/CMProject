@@ -7,9 +7,7 @@ import 'package:flutter/material.dart';
 import '../widgets/base_screen.dart';
 import 'criar_banca_screen.dart';
 import 'message_home_screen.dart';
-import 'produtor_home_content.dart';
 import 'sales_screen.dart';
-import 'search_screen.dart';
 
 
 class BancaHomeScreen extends StatefulWidget {

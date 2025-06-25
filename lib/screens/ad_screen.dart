@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'notification_service.dart';
 
 
 class CreateAdScreen extends StatefulWidget {
@@ -166,6 +168,20 @@ class _CreateAdScreenState extends State<CreateAdScreen> {
       SnackBar(content: Text('Erro ao publicar anúncio: $e')),
     );
   }
+  await flutterLocalNotificationsPlugin.show(
+  0,
+  'Anúncio Criado!',
+  'Seu anúncio "$productName" foi publicado com sucesso.',
+  const NotificationDetails(
+    android: AndroidNotificationDetails(
+    'default_channel_id',
+    'Anúncios',
+    importance: Importance.high,
+    priority: Priority.high,
+    icon: 'logo',
+  ),
+  ),
+);
 }
 
 

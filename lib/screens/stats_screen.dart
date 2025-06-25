@@ -318,7 +318,7 @@ class _StatsScreenState extends State<StatsScreen> {
           width: 25,
           height: 70 * heightFactor,
           decoration: BoxDecoration(
-            color: isCurrentWeek ? Colors.green : Colors.green.withOpacity(0.6),
+            color: isCurrentWeek ? Colors.green : Colors.green.withValues(),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(4))
           ),
         ),

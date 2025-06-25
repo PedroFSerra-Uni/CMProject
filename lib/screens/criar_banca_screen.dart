@@ -20,7 +20,6 @@ class _CriarBancaScreenState extends State<CriarBancaScreen> {
   final TextEditingController _mercadoController = TextEditingController();
   final TextEditingController _localizacaoController = TextEditingController();
 
-  String? _localizacaoSelecionada;
   final List<String> _mercados = [];
   final List<String> _imageBase64List = [];
 

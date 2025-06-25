@@ -198,7 +198,6 @@ class _SearchScreenState extends State<SearchScreen> {
       _hasSearched = true;
     });
     
-    print('Pesquisando por: ${_searchController.text}');
   }
 
   void _applyFilters() {
@@ -211,9 +210,6 @@ class _SearchScreenState extends State<SearchScreen> {
       }
     }
     
-    print('Filtros aplicados:');
-    print('Preço máximo: ${_priceValue.round()}€');
-    print('Subcategorias: $selectedSubCategories');
     
     // Executa a pesquisa ao aplicar filtros
     _performSearch();
