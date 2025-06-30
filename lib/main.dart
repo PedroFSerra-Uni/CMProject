@@ -71,7 +71,11 @@ class MyApp extends StatelessWidget {
             '/produtor-home': (context) => const ProdutorHome(),
             '/utilizador-home': (context) => const ConsumidorHomeScreen(),
             '/admin-dashboard': (context) => const DummyScreen('Admin Dashboard'),
-            '/product-detail': (context) => const ProductDetailScreen(),
+            '/product-detail': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map<dynamic, dynamic>;
+              return ProductDetailScreen(ad: args);
+            },
+
             '/ad-detail': (context) =>
                 ProducerAdDetailScreen(title: '', subtitle: '', imageUrl: ''),
             '/historico': (context) => const HistoricoScreen(),
