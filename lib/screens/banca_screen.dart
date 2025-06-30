@@ -68,14 +68,21 @@ class _BancaHomeScreenState extends State<BancaHomeScreen> {
 
     final screenWidth = MediaQuery.of(context).size.width;
 
-    return Scaffold(
-      
+    return BaseScreen(
+      selectedIndex: 4,
+      onTabSelected: _onTabSelected,
+      bottomNavItems: const [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+        BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Pesquisar'),
+        BottomNavigationBarItem(icon: Icon(Icons.message), label: 'Mensagens'),
+        BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: 'Vendas'),
+        BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Banca'),
+      ],
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -92,14 +99,13 @@ class _BancaHomeScreenState extends State<BancaHomeScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => EditarBancaScreen(
-                        nomeBanca: bancaData!['nome'] ?? '',
-                        descricao: bancaData!['descricao'] ?? '',
-                        localizacao: bancaData!['localizacao'] ?? '',
-                        mercados: List<String>.from(bancaData!['mercados'] ?? []),
-                        criticas: List<Map<String, dynamic>>.from(bancaData!['criticas'] ?? []),
-                        imagensBase64: List<String>.from(bancaData!['imagensBase64'] ?? []),
-                      ),
-
+                          nomeBanca: bancaData!['nome'] ?? '',
+                          descricao: bancaData!['descricao'] ?? '',
+                          localizacao: bancaData!['localizacao'] ?? '',
+                          mercados: List<String>.from(bancaData!['mercados'] ?? []),
+                          criticas: List<Map<String, dynamic>>.from(bancaData!['criticas'] ?? []),
+                          imagensBase64: List<String>.from(bancaData!['imagensBase64'] ?? []),
+                        ),
                       ),
                     );
 
@@ -124,14 +130,11 @@ class _BancaHomeScreenState extends State<BancaHomeScreen> {
                 ),
               ],
             ),
-
             const SizedBox(height: 16),
-
-            // First image centered with fixed width
             if ((bancaData!['imagensBase64'] as List).isNotEmpty)
               Center(
                 child: Container(
-                  width: screenWidth - 32, // account for padding: 16 left + 16 right
+                  width: screenWidth - 32,
                   height: 200,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
@@ -144,34 +147,19 @@ class _BancaHomeScreenState extends State<BancaHomeScreen> {
                   ),
                 ),
               ),
-
             const SizedBox(height: 24),
-
-            // Descrição
             const Text('Descrição', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Text(
               bancaData!['descricao'] ?? 'Sem descrição',
               softWrap: true,
             ),
-
             const SizedBox(height: 24),
-
-            // Detalhes
             const Text('Detalhes', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Text(
-              '📍 Localização: ${bancaData!['localizacao'] ?? 'N/A'}',
-              softWrap: true,
-            ),
-            Text(
-              '🏠 Morada: ${bancaData!['morada'] ?? 'N/A'}',
-              softWrap: true,
-            ),
-
+            Text('📍 Localização: ${bancaData!['localizacao'] ?? 'N/A'}', softWrap: true),
+            Text('🏠 Morada: ${bancaData!['morada'] ?? 'N/A'}', softWrap: true),
             const SizedBox(height: 24),
-
-            // Mercados
             const Text('Mercados habituais', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Wrap(
@@ -182,10 +170,7 @@ class _BancaHomeScreenState extends State<BancaHomeScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 24),
-
-            // Críticas (placeholder)
             const Text('Críticas', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Text(
