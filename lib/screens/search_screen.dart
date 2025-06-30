@@ -176,8 +176,9 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+          return Scaffold(
+            appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Pesquisar Produtos'),
         actions: [
           Builder(

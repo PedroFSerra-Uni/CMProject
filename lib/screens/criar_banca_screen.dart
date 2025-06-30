@@ -140,7 +140,7 @@ class _CriarBancaScreenState extends State<CriarBancaScreen> {
       );
 
       // Navega para ecrã principal da banca (ajusta conforme o teu router)
-      Navigator.pushNamed(context, '/banca-home-cheese');
+      Navigator.pushNamed(context, '/produtor-home');
 
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
