@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -396,33 +397,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _confirmLogout(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Terminar sessão'),
-        content: const Text('Tem a certeza que quer terminar a sessão?'),
-        actions: [
-          TextButton(
-            child: const Text('Cancelar'),
-            onPressed: () => Navigator.pop(context),
-          ),
-          TextButton(
-            child: const Text('Terminar sessão', style: TextStyle(color: Colors.red)),
-            onPressed: () {
-              Navigator.pop(context);
-              _logout();
-            },
-          ),
-        ],
-      ),
-    );
-  }
+void _confirmLogout(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text('Terminar sessão'),
+      content: const Text('Tem a certeza que quer terminar a sessão?'),
+      actions: [
+        TextButton(
+          child: const Text('Cancelar'),
+          onPressed: () => Navigator.pop(context),
+        ),
+        TextButton(
+          child: const Text('Terminar sessão', style: TextStyle(color: Colors.red)),
+          onPressed: () {
+            Navigator.pop(context);
+            _logout();
+          },
+        ),
+      ],
+    ),
+  );
+}
 
-  void _logout() {
-    // Implementa a lógica de logout aqui
+  void _logout() async {
+  try {
+    await FirebaseAuth.instance.signOut();
+
+    // Navega para a tela de login, limpando o histórico de navegação
+    Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+  } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Sessão terminada.')),
+      SnackBar(content: Text('Erro ao terminar sessão: $e')),
     );
   }
+}
+
+
+
+
 }

@@ -77,135 +77,113 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BaseScreen(
-      selectedIndex: 0,
-      onTabSelected: (index) {
-        // lógica de navegação
-      },
-      bottomNavItems: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
-        BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Buscar'),
-        BottomNavigationBarItem(icon: Icon(Icons.message), label: 'Mensagens'),
-        BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Carrinho'),
-        BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Loja'),
-      ],
-      body: Container(
-        color: Colors.white,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  const Text('Histórico', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () {}, // Ação de deletar
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _produtos.length,
-                itemBuilder: (context, index) {
-                  final produto = _produtos[index];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    elevation: 3,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
+    return Scaffold(
+  appBar: AppBar(
+    leading: IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () => Navigator.pop(context),
+    ),
+    title: const Text('Histórico'),
+    actions: [
+      IconButton(
+        icon: const Icon(Icons.delete),
+        onPressed: () {}, // ação de deletar
+      ),
+    ],
+  ),
+  body: Container(
+    color: Colors.white,
+    child: ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: _produtos.length,
+      itemBuilder: (context, index) {
+        final produto = _produtos[index];
+        return Card(
+          margin: const EdgeInsets.only(bottom: 16),
+          elevation: 3,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        image: DecorationImage(
+                          image: AssetImage(produto['imagemPath'] ?? 'assets/imagens/default_product.jpg'),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: 80,
-                                height: 80,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  image: DecorationImage(
-                                    image: AssetImage(produto['imagemPath'] ?? 'assets/imagens/default_product.jpg'),
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      produto['nome'].toString(),
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      produto['produtor'].toString(),
-                                      style: const TextStyle(fontSize: 14),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '${produto['quantidade'].toString()} Kgs',
-                                      style: const TextStyle(fontSize: 14),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '€${produto['preco'].toString()}',
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.green,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                          Text(
+                            produto['nome'].toString(),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                          const SizedBox(height: 8),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: ElevatedButton(
-                              onPressed: () => _adicionarStock(index),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                              ),
-                              child: const Text(
-                                'Restock',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                          const SizedBox(height: 4),
+                          Text(
+                            produto['produtor'].toString(),
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${produto['quantidade'].toString()} Kgs',
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '€${produto['preco'].toString()}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
                     ),
-                  );
-                },
-              ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton(
+                    onPressed: () => _adicionarStock(index),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: const Text(
+                      'Restock',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
+          ),
+        );
+      },
+    ),
+  ),
+);
+}
 }
